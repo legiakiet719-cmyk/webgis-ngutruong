@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebGIS Dự Báo Ngư Trường & Biểu Đồ</title>
+    <!-- Thư viện Leaflet cho Bản đồ -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Thư viện Chart.js cho Biểu đồ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { margin: 0; padding: 0; display: flex; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden; }
+        /* Cột sidebar chứa biểu đồ bên trái */
+        #sidebar { width: 35%; padding: 20px; background-color: #f8f9fa; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; }
+        /* Phần bản đồ bên phải */
+        #map { width: 65%; height: 100%; }
+        
+        h2 { color: #2c3e50; margin-top: 0; font-size: 22px; }
+        p { color: #555; font-size: 14px; line-height: 1.5; }
+        .chart-wrapper { flex-grow: 1; min-height: 300px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar chứa thông tin và Biểu đồ -->
+    <div id="sidebar">
+        <h2>Bảng Điều Khiển Ngư Trường</h2>
+        <p>Hệ thống tự động phân tích vùng mặn, nhiệt độ bề mặt (SST) và nồng độ Chlorophyll-a để dự báo sản lượng cá tiềm năng.</p>
+        
+        <div class="chart-wrapper">
+            <!-- Khu vực vẽ biểu đồ -->
+            <canvas id="forecastChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Khu vực hiển thị Bản đồ -->
+    <div id="map"></div>
+
+    <script>
+        // 1. Dữ liệu đầu vào (Đã thêm tên vùng biển cho dễ nhìn trên biểu đồ)
+        var duLieuTest = {
+          "type": "FeatureCollection",
+          "features": [
+            { "type": "Feature", "properties": { "Ten": "Vùng 1 (Khánh Hòa)", "SST": 28.5, "Chlorophyll": 0.45, "CPUE": 150, "Status": "Tốt" }, "geometry": { "type": "Point", "coordinates": [110.5, 12.3] } },
+            { "type": "Feature", "properties": { "Ten": "Vùng 2 (Nước trồi)", "SST": 25.2, "Chlorophyll": 1.80, "CPUE": 210, "Status": "Rất Tốt" }, "geometry": { "type": "Point", "coordinates": [109.2, 11.1] } },
+            { "type": "Feature", "properties": { "Ten": "Vùng 3 (Xa bờ)", "SST": 30.5, "Chlorophyll": 0.08, "CPUE": 15, "Status": "Kém" }, "geometry": { "type": "Point", "coordinates": [112.0, 10.0] } },
+            { "type": "Feature", "properties": { "Ten": "Vùng 4 (Phú Yên)", "SST": 27.8, "Chlorophyll": 0.35, "CPUE": 180, "Status": "Tốt" }, "geometry": { "type": "Point", "coordinates": [111.15, 13.45] } }
+          ]
+        };
+
+        // 2. THIẾT LẬP BẢN ĐỒ LEAFLET
+        var map = L.map('map').setView([11.5, 110.5], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(map);
+
+        function getColor(status) {
+            if (status.includes("Rất Tốt")) return "#d32f2f"; 
+            if (status.includes("Tốt")) return "#f57c00"; 
+            return "#757575"; 
+        }
+
+        L.geoJSON(duLieuTest, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, { radius: 12, fillColor: getColor(feature.properties.Status), color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9 });
+            },
+            onEachFeature: function (feature, layer) {
+                var popupContent = "<b>" + feature.properties.Ten + "</b><br/>" +
+                                   "Nhiệt độ (SST): " + feature.properties.SST + " °C<br/>" +
+                                   "Diệp lục: " + feature.properties.Chlorophyll + " mg/m³<br/>" +
+                                   "Dự báo CPUE: " + feature.properties.CPUE + " kg/mẻ";
+                layer.bindPopup(popupContent);
+            }
+        }).addTo(map);
+
+        // 3. XỬ LÝ DỮ LIỆU VÀ VẼ BIỂU ĐỒ BẰNG CHART.JS
+        // Lấy nhãn (tên vùng) và dữ liệu (Sản lượng dự báo) từ mảng GeoJSON
+        var nhanBieuDo = duLieuTest.features.map(f => f.properties.Ten);
+        var duLieuSanLuong = duLieuTest.features.map(f => f.properties.CPUE);
+        var mauSacBieuDo = duLieuTest.features.map(f => getColor(f.properties.Status));
+
+        var ctx = document.getElementById('forecastChart').getContext('2d');
+        var forecastChart = new Chart(ctx, {
+            type: 'bar', // Biểu đồ dạng cột
+            data: {
+                labels: nhanBieuDo,
+                datasets: [{
+                    label: 'Sản lượng dự báo (CPUE - kg/mẻ)',
+                    data: duLieuSanLuong,
+                    backgroundColor: mauSacBieuDo, // Lấy màu tương ứng với trạng thái trên bản đồ
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Sản lượng (kg)' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Tương quan dự báo tại các điểm khảo sát', font: { size: 14 } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
