@@ -29,21 +29,21 @@
 
         .main-container { display: flex; flex: 1; height: calc(100% - 50px); position: relative; }
 
-        /* SIDEBAR */
+        /* SIDEBAR CHỨC NĂNG */
         .sidebar-icons { width: 50px; background: #070d12; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 25px; z-index: 1000; }
         .sidebar-icons i { font-size: 18px; color: #718096; cursor: pointer; transition: color 0.3s; }
         .sidebar-icons i:hover, .sidebar-icons i.active { color: var(--accent-color); }
 
-        /* CONTROL PANEL */
+        /* BẢNG ĐIỀU KHIỂN BÊN TRÁI */
         .control-panel { width: 330px; background: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; z-index: 1000; backdrop-filter: blur(5px); }
         .control-panel::-webkit-scrollbar { width: 6px; }
         .control-panel::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 10px; }
         
-        .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; letter-spacing: 0.5px; display: flex; justify-content: space-between; }
+        .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
         
         .flex-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px; }
         
-        /* SWITCH BUTTON */
+        /* NÚT SWITCH (BẬT/TẮT AI) */
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5568; transition: .3s; border-radius: 34px; }
@@ -58,18 +58,19 @@
         .chart-box { background: rgba(0,0,0,0.25); border-radius: 6px; padding: 12px; border: 1px solid var(--border-color); }
         .chart-container { height: 100px; position: relative; margin-top: 5px; }
 
-        /* MAP */
+        /* BẢN ĐỒ CHÍNH */
         #map { flex: 1; height: 100%; background-color: #000; }
 
-        /* DYNAMIC TABLE OVERLAY */
+        /* BẢNG TỌA ĐỘ ĐỘNG BÊN PHẢI */
         .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 290px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; z-index: 1000; font-size: 12px; backdrop-filter: blur(5px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         .catch-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .catch-table th, .catch-table td { text-align: left; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .catch-table th { color: #718096; font-weight: normal; font-size: 11px; text-transform: uppercase; }
         .catch-table tr { cursor: pointer; transition: background 0.2s; }
-        .catch-table tr:hover { background: rgba(0, 180, 216, 0.2); } /* Hiệu ứng hover khi rê chuột vào hàng */
+        .catch-table tr:hover { background: rgba(0, 180, 216, 0.2); } 
         .catch-table tr.active-row { border-left: 3px solid var(--accent-color); background: rgba(0, 180, 216, 0.15); }
 
+        /* CHÚ GIẢI Ở DƯỚI */
         .map-legend { position: absolute; bottom: 20px; left: 410px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 15px; z-index: 1000; font-size: 11px; display: flex; flex-direction: column; gap: 8px; width: 240px; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .legend-bar { height: 8px; background: linear-gradient(to right, #00b4d8, #00f5d4, #ffb703, #ff4d6d); border-radius: 4px; }
         .legend-labels { display: flex; justify-content: space-between; color: #a0aec0; text-transform: uppercase; font-weight: bold; font-size: 10px; }
@@ -79,10 +80,11 @@
     </style>
 </head>
 <body>
+    <!-- HEADER THỜI GIAN THỰC -->
     <header>
         <h1><i class="fa-solid fa-globe" style="color: var(--accent-color);"></i> WebGIS Dự Báo Ngư Trường</h1>
         <div class="nav-right">
-            <span id="live-time" style="color: var(--active-color); font-weight: bold; margin-right: 15px;"></span>
+            <span id="live-time" style="color: var(--active-color); font-weight: bold; margin-right: 15px; font-size: 14px;"></span>
             <span><i class="fa-solid fa-layer-group"></i> Bản đồ 2D</span>
             <span><i class="fa-solid fa-water"></i> Địa hình biển</span>
             <span><i class="fa-solid fa-user-tie"></i> Lê Gia Kiệt</span>
@@ -90,6 +92,7 @@
     </header>
 
     <div class="main-container">
+        <!-- SIDEBAR ICON -->
         <div class="sidebar-icons">
             <i class="fa-solid fa-house active"></i>
             <i class="fa-solid fa-chart-line"></i>
@@ -98,12 +101,15 @@
             <i class="fa-solid fa-gear" style="margin-top: auto; margin-bottom: 20px;"></i>
         </div>
 
+        <!-- BẢNG ĐIỀU KHIỂN -->
         <div class="control-panel">
             <div>
-                <div class="section-title">Mô Hình Dự Báo <span id="model-status" style="color: var(--active-color);">Đang chạy</span></div>
+                <div class="section-title">
+                    Mô Hình Dự Báo 
+                    <span id="model-status" style="color: var(--active-color); font-size: 11px;"><i class="fa-solid fa-circle-play"></i> Đang chạy</span>
+                </div>
                 <div class="flex-row">
                     <span>Quét điểm nóng (AI Layer)</span>
-                    <!-- Chức năng 1: Gắn ID cho nút Switch để bắt sự kiện -->
                     <label class="switch"><input type="checkbox" id="toggleAI" checked><span class="slider"></span></label>
                 </div>
             </div>
@@ -113,24 +119,28 @@
                 <div class="variable-list">
                     <div class="var-item"><span>Nhiệt độ (SST):</span><span class="var-val">28.5°C</span></div>
                     <div class="var-item"><span>Diệp lục (Chl-a):</span><span class="var-val" style="color: #00f5d4;">Cao</span></div>
+                    <div class="var-item"><span>Độ pH đại dương:</span><span class="var-val">8.1</span></div>
                 </div>
             </div>
             
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Biến Động Nhiệt Độ</div><div class="chart-container"><canvas id="chart1"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Biến Động Nhiệt Độ (°C)</div><div class="chart-container"><canvas id="chart1"></canvas></div></div>
             <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Xu Hướng Môi Trường</div><div class="chart-container"><canvas id="chart2"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Dòng Hải Lưu (m/s)</div><div class="chart-container"><canvas id="chart3"></canvas></div></div>
         </div>
 
+        <!-- MAP KÉO DÀI -->
         <div id="map"></div>
 
+        <!-- BẢNG TỌA ĐỘ BÊN PHẢI -->
         <div class="map-overlay-right">
             <div class="section-title">Khu Vực Tiềm Năng Chứa Cá</div>
             <table class="catch-table">
                 <thead><tr><th>Mã Trạm</th><th>Tọa Độ (Click để Xem)</th></tr></thead>
-                <!-- Chức năng 2: Vùng Body bảng trống để JS tự động đổ dữ liệu vào -->
                 <tbody id="table-body"></tbody>
             </table>
         </div>
 
+        <!-- CHÚ GIẢI -->
         <div class="map-legend">
             <span style="font-weight: bold; color: #fff; font-size: 12px;"><i class="fa-solid fa-temperature-half"></i> Mật Độ Phân Bố</span>
             <div class="legend-bar"></div>
@@ -139,7 +149,7 @@
     </div>
 
     <script>
-        // --- ĐỒNG HỒ LIVE THỜI GIAN THỰC ---
+        // --- 1. ĐỒNG HỒ LIVE THỜI GIAN THỰC ---
         function updateTime() {
             var now = new Date();
             document.getElementById('live-time').innerHTML = '<i class="fa-solid fa-clock"></i> ' + now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN');
@@ -147,15 +157,14 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        // --- KHỞI TẠO BẢN ĐỒ ---
+        // --- 2. KHỞI TẠO BẢN ĐỒ VỆ TINH ---
         var map = L.map('map', {zoomControl: false}).setView([11.5, 110.5], 6);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18 }).addTo(map);
 
-        // --- NHÓM LAYER ĐỂ DỄ DÀNG BẬT/TẮT BẰNG NÚT SWITCH ---
         var aiLayerGroup = L.layerGroup().addTo(map); 
 
-        // 1. DỮ LIỆU LƯỚI NHIỆT ĐỘ (Thêm vào nhóm aiLayerGroup)
+        // --- 3. DỮ LIỆU LƯỚI NHIỆT ĐỘ (CÓ LAND MASK) ---
         var gridFeatures = [];
         for (var lat = 8; lat <= 16; lat += 0.4) { 
             for (var lng = 105; lng <= 114; lng += 0.4) { 
@@ -179,9 +188,9 @@
         
         L.geoJSON(gridFeatures, {
             style: function(f) { return { fillColor: getSSTColor(f.properties.SST), weight: 0.5, color: 'rgba(255,255,255,0.05)', fillOpacity: 0.4 }; }
-        }).addTo(aiLayerGroup); // Đưa lưới vào group
+        }).addTo(aiLayerGroup);
 
-        // 2. DỮ LIỆU ĐIỂM CÁ & CHỨC NĂNG ĐỘNG CHO BẢNG
+        // --- 4. DỮ LIỆU ĐIỂM CÁ & BẢNG ĐỘNG CLICK FLY-TO ---
         var spotData = [
             { id: "TS.55.366°S", name: "Xác suất 85% - Cá Ngừ", lat: 12.3, lng: 110.5, color: "#ff4d6d" },
             { id: "TS.55.365°S", name: "Đàn cá nổi đang di cư", lat: 11.1, lng: 109.5, color: "#00f5d4" },
@@ -190,59 +199,92 @@
         ];
 
         var tableBody = document.getElementById('table-body');
-        var markers = {}; // Lưu trữ marker để gọi khi click vào bảng
+        var markers = {};
 
         spotData.forEach(function(spot, index) {
-            // Vẽ điểm lên bản đồ (Thêm vào aiLayerGroup)
+            // Đặt điểm lên bản đồ
             var marker = L.circleMarker([spot.lat, spot.lng], { radius: 8, fillColor: spot.color, color: "#fff", weight: 2, fillOpacity: 0.9 }).addTo(aiLayerGroup);
             marker.bindPopup("<b style='color:"+spot.color+"'><i class='fa-solid fa-fish-fins'></i> " + spot.name + "</b>");
-            markers[spot.id] = marker; // Lưu marker theo ID
+            markers[spot.id] = marker;
 
-            // Tạo hàng động (HTML) cho bảng tọa độ
+            // Đổ dữ liệu vào bảng
             var tr = document.createElement('tr');
-            if(index === 0) tr.className = "active-row"; // Dòng đầu tiên sáng màu mặc định
+            if(index === 0) tr.className = "active-row";
             tr.innerHTML = `<td>${spot.id}</td><td style="color:${spot.color}; font-weight:bold;">${spot.lng}°E, ${spot.lat}°N</td>`;
             
-            // SỰ KIỆN CLICK: Bay đến tọa độ khi nhấn vào hàng trong bảng
+            // Xử lý sự kiện khi nhấp chuột
             tr.onclick = function() {
-                // Xóa sáng các dòng khác, làm sáng dòng vừa click
                 document.querySelectorAll('.catch-table tr').forEach(row => row.classList.remove('active-row'));
                 tr.classList.add('active-row');
                 
-                // Nếu lớp AI đang bật, bay bản đồ đến điểm đó và mở popup
                 if(document.getElementById('toggleAI').checked) {
-                    map.flyTo([spot.lat, spot.lng], 10, { duration: 1.5 }); // Zoom vào mức 10
-                    setTimeout(() => { markers[spot.id].openPopup(); }, 1500); // Mở bong bóng thông tin sau khi bay tới nơi
+                    map.flyTo([spot.lat, spot.lng], 10, { duration: 1.5 });
+                    setTimeout(() => { markers[spot.id].openPopup(); }, 1500);
                 }
             };
             tableBody.appendChild(tr);
         });
 
-        // 3. SỰ KIỆN BẬT/TẮT NÚT SWITCH (MÔ HÌNH AI)
+        // --- 5. NÚT SWITCH (BẬT/TẮT TOÀN BỘ AI) ---
         document.getElementById('toggleAI').addEventListener('change', function() {
             var statusText = document.getElementById('model-status');
             if (this.checked) {
-                map.addLayer(aiLayerGroup); // Hiển thị lại lưới và điểm cá
-                statusText.innerText = "Đang chạy";
+                map.addLayer(aiLayerGroup);
+                statusText.innerHTML = '<i class="fa-solid fa-circle-play"></i> Đang chạy';
                 statusText.style.color = "var(--active-color)";
             } else {
-                map.removeLayer(aiLayerGroup); // Ẩn lưới và điểm cá
-                statusText.innerText = "Đã tắt";
+                map.removeLayer(aiLayerGroup);
+                statusText.innerHTML = '<i class="fa-solid fa-circle-pause"></i> Đã tạm dừng';
                 statusText.style.color = "#718096";
-                map.closePopup(); // Đóng popup nếu đang mở
+                map.closePopup();
             }
         });
 
-        // 4. BIỂU ĐỒ (Giữ nguyên)
-        function createMiniChart(canvasId, label, data, color) {
+        // --- 6. 3 BIỂU ĐỒ ĐỘNG CHẠY THEO THỜI GIAN THỰC (LIVE STREAM) ---
+        function createDynamicChart(canvasId, label, initialData, color, yMin, yMax) {
             var ctx = document.getElementById(canvasId).getContext('2d');
             return new Chart(ctx, {
-                type: 'line', data: { labels: [1,2,3,4,5,6,7], datasets: [{ label: label, data: data, borderColor: color, backgroundColor: color + '25', fill: true, borderWidth: 2, pointRadius: 0, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+                type: 'line', 
+                data: { 
+                    labels: ['1','2','3','4','5','6','7','8','9','10'],
+                    datasets: [{ 
+                        label: label, data: initialData, borderColor: color, backgroundColor: color + '25', 
+                        fill: true, borderWidth: 2, pointRadius: 0, tension: 0.4 
+                    }] 
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    animation: { duration: 0 }, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { x: { display: false }, y: { display: false, min: yMin, max: yMax } } 
+                }
             });
         }
-        createMiniChart('chart1', 'Nhiệt Độ', [25, 26, 25.5, 27, 28.5, 29, 28], '#ffb703');
-        createMiniChart('chart2', 'Môi Trường', [30, 45, 40, 65, 75, 70, 85], '#00f5d4');
+        
+        // Khởi tạo 3 biểu đồ
+        var chartTemp = createDynamicChart('chart1', 'Nhiệt Độ', [27,27.2,26.8,27.5,27.1,26.9,27,27.4,27.2,27], '#ffb703', 25, 30);
+        var chartEnv  = createDynamicChart('chart2', 'Môi Trường', [50,55,60,48,52,65,70,68,55,60], '#00f5d4', 20, 100);
+        var chartCur  = createDynamicChart('chart3', 'Hải Lưu', [0.3,0.4,0.35,0.5,0.45,0.38,0.42,0.55,0.4,0.3], '#00b4d8', 0, 1);
+
+        // Vòng lặp cập nhật cả 3 biểu đồ liên tục mỗi 1.5 giây
+        setInterval(function() {
+            if (document.getElementById('toggleAI').checked) { // Nếu AI tắt, biểu đồ cũng dừng
+                // Cập nhật Nhiệt độ
+                chartTemp.data.datasets[0].data.shift(); 
+                chartTemp.data.datasets[0].data.push(26 + Math.random() * 3); 
+                chartTemp.update();
+
+                // Cập nhật Môi trường
+                chartEnv.data.datasets[0].data.shift();
+                chartEnv.data.datasets[0].data.push(40 + Math.random() * 45); 
+                chartEnv.update();
+                
+                // Cập nhật Hải lưu
+                chartCur.data.datasets[0].data.shift();
+                chartCur.data.datasets[0].data.push(0.2 + Math.random() * 0.5); 
+                chartCur.update();
+            }
+        }, 1500); 
     </script>
 </body>
 </html>
