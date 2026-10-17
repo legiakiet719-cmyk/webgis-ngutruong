@@ -167,13 +167,13 @@
 
     <script>
         // 1. KHỞI TẠO BẢN ĐỒ (Chế độ Dark/Satelite)
-        var map = L.map('map', {zoomControl: false}).setView([11.5, 111.5], 6);
+       var map = L.map('map', {zoomControl: false}).setView([11.5, 111.5], 6);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // Thêm lớp bản đồ tối CartoDB Dark Matter
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap & CartoDB',
-            maxZoom: 20
+        // Đổi sang lớp bản đồ Vệ tinh của Esri (Giống hình mẫu nhất)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+            maxZoom: 18
         }).addTo(map);
 
         // 2. MÔ PHỎNG DỮ LIỆU GRID NHIỆT ĐỘ BIỂN (Bản đồ nhiệt)
