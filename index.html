@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>WebGIS Fishery Forecast - Dashboard</title>
-    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Chart.js để vẽ biểu đồ nhỏ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Thư viện biểu tượng FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
@@ -23,26 +20,20 @@
 
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; display: flex; flex-direction: column; }
 
-        /* THANH ĐIỀU HƯỚNG TRÊN CÙNG */
         header { height: 50px; background: #070d12; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 2000; }
-        header h1 { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; color: #fff; }
+        header h1 { margin: 0; font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 10px; color: #fff; }
         .nav-right { display: flex; gap: 20px; font-size: 13px; color: #a0aec0; }
         .nav-right span { cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .nav-right span:hover { color: #fff; }
 
-        /* BỐ CỤC CHÍNH */
         .main-container { display: flex; flex: 1; height: calc(100% - 50px); position: relative; }
 
-        /* THANH CÔNG CỤ DỌC */
         .sidebar-icons { width: 50px; background: #070d12; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 25px; z-index: 1000; }
-        .sidebar-icons i { font-size: 18px; color: #718096; cursor: pointer; transition: color 0.3s; }
-        .sidebar-icons i:hover, .sidebar-icons i.active { color: var(--accent-color); }
+        .sidebar-icons i { font-size: 18px; color: #718096; cursor: pointer; }
+        .sidebar-icons i.active { color: var(--accent-color); }
 
-        /* PANEL ĐIỀU KHIỂN & BIỂU ĐỒ (BÊN TRÁI) */
         .control-panel { width: 330px; background: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; z-index: 1000; backdrop-filter: blur(5px); }
-        .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 13px; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
         
-        /* Switch & Biến */
         .flex-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px; }
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -55,33 +46,26 @@
         .var-item { display: flex; justify-content: space-between; }
         .var-val { color: var(--accent-color); font-weight: bold; }
 
-        /* Khu vực Biểu đồ */
         .chart-box { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 10px; border: 1px solid var(--border-color); }
         .chart-container { height: 100px; position: relative; margin-top: 5px; }
 
-        /* BẢN ĐỒ */
-        #map { flex: 1; height: 100%; background-color: #0b131a !important; }
+        #map { flex: 1; height: 100%; background-color: #0b131a; }
 
-        /* CÁC PANEL NỔI TRÊN BẢN ĐỒ (BÊN PHẢI) */
-        .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 260px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); font-size: 12px; }
+        .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 260px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; z-index: 1000; font-size: 12px; backdrop-filter: blur(5px); }
         .catch-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .catch-table th, .catch-table td { text-align: left; padding: 4px 2px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .catch-table th { color: #718096; font-weight: normal; }
         .catch-table tr.highlight { background: rgba(0, 180, 216, 0.15); color: #fff; }
 
-        /* Chú giải dưới đáy bản đồ */
-        .map-legend { position: absolute; bottom: 20px; left: 410px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 15px; z-index: 1000; font-size: 11px; display: flex; flex-direction: column; gap: 5px; width: 220px; }
+        .map-legend { position: absolute; bottom: 20px; left: 410px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 15px; z-index: 1000; font-size: 11px; display: flex; flex-direction: column; gap: 5px; width: 220px; backdrop-filter: blur(5px); }
         .legend-bar { height: 8px; background: linear-gradient(to right, #00b4d8, #00f5d4, #ffb703, #ff4d6d); border-radius: 4px; }
         .legend-labels { display: flex; justify-content: space-between; color: #a0aec0; }
-
-        /* Popup custom của Leaflet */
-        .leaflet-popup-content-wrapper { background: var(--panel-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); border-radius: 6px; }
+        
+        .leaflet-popup-content-wrapper { background: var(--panel-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); }
         .leaflet-popup-tip { background: var(--panel-bg) !important; }
     </style>
 </head>
 <body>
-
-    <!-- THANH ĐIỀU HƯỚNG TRÊN CÙNG -->
     <header>
         <h1><i class="fa-solid fa-globe" style="color: var(--accent-color);"></i> WebGIS Fishery Forecast</h1>
         <div class="nav-right">
@@ -92,7 +76,6 @@
     </header>
 
     <div class="main-container">
-        <!-- THANH CÔNG CỤ DỌC -->
         <div class="sidebar-icons">
             <i class="fa-solid fa-house active"></i>
             <i class="fa-solid fa-chart-line"></i>
@@ -101,16 +84,11 @@
             <i class="fa-solid fa-gear" style="margin-top: auto; margin-bottom: 20px;"></i>
         </div>
 
-        <!-- PANEL ĐIỀU KHIỂN & BIỂU ĐỒ (BÊN TRÁI) -->
         <div class="control-panel">
             <div>
                 <div class="section-title">Prediction Model</div>
-                <div class="flex-row">
-                    <span>Active (GIS + AI)</span>
-                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                </div>
+                <div class="flex-row"><span>Active (GIS + AI)</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
             </div>
-
             <div>
                 <div class="section-title">Real-Time Variables</div>
                 <div class="variable-list">
@@ -119,33 +97,17 @@
                     <div class="var-item"><span>pH:</span><span class="var-val">8.1</span></div>
                 </div>
             </div>
-
-            <div class="chart-box">
-                <div class="section-title" style="border:0; margin:0;">Graph Overlays</div>
-                <div class="chart-container"><canvas id="chart1"></canvas></div>
-            </div>
-
-            <div class="chart-box">
-                <div class="section-title" style="border:0; margin:0;">Environmental Trends</div>
-                <div class="chart-container"><canvas id="chart2"></canvas></div>
-            </div>
-
-            <div class="chart-box">
-                <div class="section-title" style="border:0; margin:0;">Sea Current (m/s)</div>
-                <div class="chart-container"><canvas id="chart3"></canvas></div>
-            </div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Graph Overlays</div><div class="chart-container"><canvas id="chart1"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Environmental Trends</div><div class="chart-container"><canvas id="chart2"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Sea Current (m/s)</div><div class="chart-container"><canvas id="chart3"></canvas></div></div>
         </div>
 
-        <!-- BẢN ĐỒ CHÍNH -->
         <div id="map"></div>
 
-        <!-- PANEL NỔI TRÊN BẢN ĐỒ (BÊN PHẢI) -->
         <div class="map-overlay-right">
             <div class="section-title" style="font-size:11px;">High Probability Catch Areas</div>
             <table class="catch-table">
-                <thead>
-                    <tr><th>Geosignal</th><th>Coordinates</th></tr>
-                </thead>
+                <thead><tr><th>Geosignal</th><th>Coordinates</th></tr></thead>
                 <tbody>
                     <tr class="highlight"><td>TS.55.366°S</td><td>110.500°E, 12.300°N</td></tr>
                     <tr><td>TS.55.365°S</td><td>109.200°E, 11.100°N</td></tr>
@@ -154,29 +116,24 @@
             </table>
         </div>
 
-        <!-- CHÚ GIẢI Ở ĐÁY BẢN ĐỒ -->
         <div class="map-legend">
             <span style="font-weight: 500;">Fish Density Hotspots</span>
             <div class="legend-bar"></div>
-            <div class="legend-labels">
-                <span>Low Density</span>
-                <span>High Density</span>
-            </div>
+            <div class="legend-labels"><span>Low Density</span><span>High Density</span></div>
         </div>
     </div>
 
     <script>
-        // 1. KHỞI TẠO BẢN ĐỒ (Chế độ Dark/Satelite)
-       var map = L.map('map', {zoomControl: false}).setView([11.5, 111.5], 6);
+        // 1. KHỞI TẠO BẢN ĐỒ VỆ TINH (ESRI WORLD IMAGERY - KHÔNG LỖI API KEY)
+        var map = L.map('map', {zoomControl: false}).setView([11.5, 111.5], 6);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // Đổi sang lớp bản đồ Vệ tinh của Esri (Giống hình mẫu nhất)
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '© Esri, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+            attribution: '© Esri',
             maxZoom: 18
         }).addTo(map);
 
-        // 2. MÔ PHỎNG DỮ LIỆU GRID NHIỆT ĐỘ BIỂN (Bản đồ nhiệt)
+        // 2. MÔ PHỎNG LỚP NHIỆT ĐỘ BIỂN (Tăng độ đậm màu để dễ nhìn trên nền vệ tinh)
         var gridFeatures = [];
         for (var lat = 9; lat <= 14; lat += 0.4) {
             for (var lng = 108; lng <= 113; lng += 0.4) {
@@ -189,18 +146,18 @@
             }
         }
 
-        // Tạo mảng màu gradient từ lạnh (xanh dương) tới ấm (đỏ/cam)
         function getSSTColor(d) {
             return d > 29 ? '#ff4d6d' : d > 28 ? '#ffb703' : d > 27 ? '#00f5d4' : '#00b4d8';
         }
 
         L.geoJSON(gridFeatures, {
             style: function(feature) {
-                return { fillColor: getSSTColor(feature.properties.SST), weight: 0.5, color: '#101c26', fillOpacity: 0.15 };
+                // Tăng fillOpacity lên 0.45 để lớp màu nổi lên trên ảnh vệ tinh
+                return { fillColor: getSSTColor(feature.properties.SST), weight: 0, fillOpacity: 0.45 };
             }
         }).addTo(map);
 
-        // 3. ĐIỂM DỰ BÁO CÁ CÓ POPUP SẮC NÉT
+        // 3. ĐIỂM DỰ BÁO CÁ
         var spotData = [
             { "name": "Prediction Accuracy: 85% / Skipjack Tuna", "coords": [12.3, 110.5], "color": "#ff4d6d" },
             { "name": "Species: Skipjack Tuna", "coords": [11.1, 109.2], "color": "#00f5d4" },
@@ -209,40 +166,23 @@
 
         spotData.forEach(function(spot) {
             var marker = L.circleMarker(spot.coords, {
-                radius: 8, fillColor: spot.color, color: "#fff", weight: 1.5, fillOpacity: 0.9
+                radius: 8, fillColor: spot.color, color: "#fff", weight: 2, fillOpacity: 1
             }).addTo(map);
             marker.bindPopup("<b style='color:"+spot.color+"'><i class='fa-solid fa-fish'></i> " + spot.name + "</b>");
         });
 
-        // 4. KHỞI TẠO CÁC BIỂU ĐỒ TRÊN SIDEBAR (Dùng Chart.js cấu hình tối giản)
+        // 4. VẼ BIỂU ĐỒ
         function createMiniChart(canvasId, label, data, color) {
             var ctx = document.getElementById(canvasId).getContext('2d');
             return new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: [1, 2, 3, 4, 5, 6, 7],
-                    datasets: [{
-                        label: label,
-                        data: data,
-                        borderColor: color,
-                        backgroundColor: color + '15',
-                        fill: true,
-                        borderWidth: 1.5,
-                        pointRadius: 0
-                    }]
+                    datasets: [{ label: label, data: data, borderColor: color, backgroundColor: color + '20', fill: true, borderWidth: 2, pointRadius: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { display: false },
-                        y: { display: false }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
             });
         }
-
         createMiniChart('chart1', 'Graph Overlays', [20, 22, 21, 24, 25, 27, 26], '#ffb703');
         createMiniChart('chart2', 'Environmental Trends', [50, 45, 60, 55, 65, 70, 62], '#00f5d4');
         createMiniChart('chart3', 'Sea Current', [0.2, 0.4, 0.3, 0.5, 0.4, 0.6, 0.4], '#00b4d8');
