@@ -2,10 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>WebGIS Fishery Forecast - Dashboard</title>
+    <title>Hệ Thống WebGIS Dự Báo Ngư Trường</title>
+    <!-- Thư viện bản đồ Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Thư viện Biểu đồ Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Thư viện Icon FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
@@ -18,21 +21,29 @@
             --active-color: #2ec4b6;
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; display: flex; flex-direction: column; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; display: flex; flex-direction: column; }
 
+        /* HEADER */
         header { height: 50px; background: #070d12; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 2000; }
         header h1 { margin: 0; font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 10px; color: #fff; }
         .nav-right { display: flex; gap: 20px; font-size: 13px; color: #a0aec0; }
-        .nav-right span { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .nav-right span { cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color 0.3s; }
+        .nav-right span:hover { color: #fff; }
 
+        /* BỐ CỤC CHÍNH */
         .main-container { display: flex; flex: 1; height: calc(100% - 50px); position: relative; }
 
+        /* THANH CÔNG CỤ DỌC */
         .sidebar-icons { width: 50px; background: #070d12; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 25px; z-index: 1000; }
-        .sidebar-icons i { font-size: 18px; color: #718096; cursor: pointer; }
-        .sidebar-icons i.active { color: var(--accent-color); }
+        .sidebar-icons i { font-size: 18px; color: #718096; cursor: pointer; transition: color 0.3s; }
+        .sidebar-icons i:hover, .sidebar-icons i.active { color: var(--accent-color); }
 
+        /* PANEL ĐIỀU KHIỂN BÊN TRÁI */
         .control-panel { width: 330px; background: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; z-index: 1000; backdrop-filter: blur(5px); }
-        .section-title { font-size: 13px; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+        .control-panel::-webkit-scrollbar { width: 6px; }
+        .control-panel::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 10px; }
+        
+        .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; letter-spacing: 0.5px; }
         
         .flex-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px; }
         .switch { position: relative; display: inline-block; width: 34px; height: 18px; }
@@ -46,103 +57,146 @@
         .var-item { display: flex; justify-content: space-between; }
         .var-val { color: var(--accent-color); font-weight: bold; }
 
-        .chart-box { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 10px; border: 1px solid var(--border-color); }
+        .chart-box { background: rgba(0,0,0,0.25); border-radius: 6px; padding: 12px; border: 1px solid var(--border-color); }
         .chart-container { height: 100px; position: relative; margin-top: 5px; }
 
-        #map { flex: 1; height: 100%; background-color: #0b131a; }
+        /* BẢN ĐỒ */
+        #map { flex: 1; height: 100%; background-color: #000; }
 
-        .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 260px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; z-index: 1000; font-size: 12px; backdrop-filter: blur(5px); }
+        /* BẢNG TỌA ĐỘ BÊN PHẢI */
+        .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 280px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; z-index: 1000; font-size: 12px; backdrop-filter: blur(5px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         .catch-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        .catch-table th, .catch-table td { text-align: left; padding: 4px 2px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .catch-table th { color: #718096; font-weight: normal; }
-        .catch-table tr.highlight { background: rgba(0, 180, 216, 0.15); color: #fff; }
+        .catch-table th, .catch-table td { text-align: left; padding: 6px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .catch-table th { color: #718096; font-weight: normal; font-size: 11px; text-transform: uppercase; }
+        .catch-table tr.highlight { background: rgba(0, 180, 216, 0.15); border-left: 3px solid var(--accent-color); }
+        .catch-table tr.highlight td { color: #fff; }
 
-        .map-legend { position: absolute; bottom: 20px; left: 410px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 15px; z-index: 1000; font-size: 11px; display: flex; flex-direction: column; gap: 5px; width: 220px; backdrop-filter: blur(5px); }
+        /* CHÚ GIẢI BẢN ĐỒ */
+        .map-legend { position: absolute; bottom: 20px; left: 410px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 15px; z-index: 1000; font-size: 11px; display: flex; flex-direction: column; gap: 8px; width: 240px; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .legend-bar { height: 8px; background: linear-gradient(to right, #00b4d8, #00f5d4, #ffb703, #ff4d6d); border-radius: 4px; }
-        .legend-labels { display: flex; justify-content: space-between; color: #a0aec0; }
+        .legend-labels { display: flex; justify-content: space-between; color: #a0aec0; text-transform: uppercase; font-weight: bold; font-size: 10px; }
         
-        .leaflet-popup-content-wrapper { background: var(--panel-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); }
+        /* TÙY CHỈNH POPUP LEAFLET */
+        .leaflet-popup-content-wrapper { background: var(--panel-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-radius: 4px; }
         .leaflet-popup-tip { background: var(--panel-bg) !important; }
+        .leaflet-popup-content b { font-size: 13px; }
     </style>
 </head>
 <body>
     <header>
-        <h1><i class="fa-solid fa-globe" style="color: var(--accent-color);"></i> WebGIS Fishery Forecast</h1>
+        <h1><i class="fa-solid fa-globe" style="color: var(--accent-color);"></i> WebGIS Dự Báo Ngư Trường</h1>
         <div class="nav-right">
-            <span><i class="fa-solid fa-layer-group"></i> 2D Map</span>
-            <span><i class="fa-solid fa-water"></i> Bathymetry</span>
-            <span><i class="fa-solid fa-user"></i> Admin</span>
+            <span><i class="fa-solid fa-layer-group"></i> Bản đồ 2D</span>
+            <span><i class="fa-solid fa-water"></i> Địa hình đáy biển</span>
+            <span><i class="fa-solid fa-user-tie"></i> Lê Gia Kiệt</span>
         </div>
     </header>
 
     <div class="main-container">
+        <!-- Sidebar Icon -->
         <div class="sidebar-icons">
             <i class="fa-solid fa-house active"></i>
             <i class="fa-solid fa-chart-line"></i>
             <i class="fa-solid fa-magnifying-glass"></i>
-            <i class="fa-solid fa-sliders"></i>
+            <i class="fa-solid fa-layer-group"></i>
             <i class="fa-solid fa-gear" style="margin-top: auto; margin-bottom: 20px;"></i>
         </div>
 
+        <!-- Bảng điều khiển -->
         <div class="control-panel">
             <div>
-                <div class="section-title">Prediction Model</div>
-                <div class="flex-row"><span>Active (GIS + AI)</span><label class="switch"><input type="checkbox" checked><span class="slider"></span></label></div>
-            </div>
-            <div>
-                <div class="section-title">Real-Time Variables</div>
-                <div class="variable-list">
-                    <div class="var-item"><span>Sea Surface Temp:</span><span class="var-val">28.5°C</span></div>
-                    <div class="var-item"><span>Chlorophyll-a:</span><span class="var-val">High</span></div>
-                    <div class="var-item"><span>pH:</span><span class="var-val">8.1</span></div>
+                <div class="section-title">Mô Hình Dự Báo</div>
+                <div class="flex-row">
+                    <span style="color: #fff;">Đang hoạt động (GIS + AI)</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
                 </div>
             </div>
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Graph Overlays</div><div class="chart-container"><canvas id="chart1"></canvas></div></div>
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Environmental Trends</div><div class="chart-container"><canvas id="chart2"></canvas></div></div>
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Sea Current (m/s)</div><div class="chart-container"><canvas id="chart3"></canvas></div></div>
+            
+            <div>
+                <div class="section-title">Thông Số Biển - Thời Gian Thực</div>
+                <div class="variable-list">
+                    <div class="var-item"><span>Nhiệt độ mặt biển (SST):</span><span class="var-val">28.5°C</span></div>
+                    <div class="var-item"><span>Nồng độ Diệp lục (Chl-a):</span><span class="var-val" style="color: #00f5d4;">Cao</span></div>
+                    <div class="var-item"><span>Độ pH đại dương:</span><span class="var-val">8.1</span></div>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="section-title" style="border:0; margin:0;">Biến Động Nhiệt Độ (°C)</div>
+                <div class="chart-container"><canvas id="chart1"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <div class="section-title" style="border:0; margin:0;">Xu Hướng Môi Trường</div>
+                <div class="chart-container"><canvas id="chart2"></canvas></div>
+            </div>
+            <div class="chart-box">
+                <div class="section-title" style="border:0; margin:0;">Dòng Hải Lưu (m/s)</div>
+                <div class="chart-container"><canvas id="chart3"></canvas></div>
+            </div>
         </div>
 
+        <!-- Vùng Bản đồ -->
         <div id="map"></div>
 
+        <!-- Bảng tọa độ -->
         <div class="map-overlay-right">
-            <div class="section-title" style="font-size:11px;">High Probability Catch Areas</div>
+            <div class="section-title">Khu Vực Tiềm Năng Bắt Gặp Cá</div>
             <table class="catch-table">
-                <thead><tr><th>Geosignal</th><th>Coordinates</th></tr></thead>
+                <thead><tr><th>Mã Tín Hiệu</th><th>Tọa Độ Địa Lý</th></tr></thead>
                 <tbody>
                     <tr class="highlight"><td>TS.55.366°S</td><td>110.500°E, 12.300°N</td></tr>
                     <tr><td>TS.55.365°S</td><td>109.200°E, 11.100°N</td></tr>
                     <tr><td>TS.55.369°S</td><td>111.150°E, 13.450°N</td></tr>
+                    <tr><td>TS.55.390°S</td><td>111.800°E, 14.100°N</td></tr>
                 </tbody>
             </table>
         </div>
 
+        <!-- Chú giải phân bố -->
         <div class="map-legend">
-            <span style="font-weight: 500;">Fish Density Hotspots</span>
+            <span style="font-weight: bold; color: #fff; font-size: 12px;"><i class="fa-solid fa-temperature-half"></i> Mật Độ Phân Bố Đàn Cá</span>
             <div class="legend-bar"></div>
-            <div class="legend-labels"><span>Low Density</span><span>High Density</span></div>
+            <div class="legend-labels"><span>Thấp (Phân Tán)</span><span>Cao (Tập Trung)</span></div>
         </div>
     </div>
 
     <script>
-        // 1. KHỞI TẠO BẢN ĐỒ VỆ TINH (ESRI WORLD IMAGERY - KHÔNG LỖI API KEY)
-        var map = L.map('map', {zoomControl: false}).setView([11.5, 111.5], 6);
+        // ==========================================
+        // 1. KHỞI TẠO BẢN ĐỒ VỆ TINH ESRI CHUYÊN NGHIỆP
+        // ==========================================
+        var map = L.map('map', {zoomControl: false}).setView([11.5, 110.5], 6);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '© Esri',
+            attribution: '© Esri - Hệ thống WebGIS',
             maxZoom: 18
         }).addTo(map);
 
-        // 2. MÔ PHỎNG LỚP NHIỆT ĐỘ BIỂN (Tăng độ đậm màu để dễ nhìn trên nền vệ tinh)
+        // ==========================================
+        // 2. MÔ PHỎNG LỚP GRID CÓ SỬ DỤNG MẶT NẠ ĐẤT LIỀN (LAND MASK)
+        // ==========================================
         var gridFeatures = [];
-        for (var lat = 9; lat <= 14; lat += 0.4) {
-            for (var lng = 108; lng <= 113; lng += 0.4) {
-                var sst = (25 + Math.random() * 5).toFixed(1);
-                gridFeatures.push({
-                    "type": "Feature",
-                    "properties": { "SST": parseFloat(sst) },
-                    "geometry": { "type": "Polygon", "coordinates": [[[lng, lat], [lng+0.4, lat], [lng+0.4, lat+0.4], [lng, lat+0.4], [lng, lat]]] }
-                });
+        
+        for (var lat = 8; lat <= 16; lat += 0.4) { 
+            for (var lng = 105; lng <= 114; lng += 0.4) { 
+                
+                // Thuật toán bóc tách đất liền Việt Nam
+                var isLand = false;
+                if (lat >= 14.5 && lng <= 109.0) isLand = true; 
+                else if (lat >= 13.0 && lat < 14.5 && lng <= 109.3) isLand = true; 
+                else if (lat >= 11.5 && lat < 13.0 && lng <= 109.2) isLand = true; 
+                else if (lat >= 10.0 && lat < 11.5 && lng <= 108.5) isLand = true; 
+                else if (lat < 10.0 && lng <= 106.8) isLand = true; 
+                
+                // Vẽ lưới ngoài khơi
+                if (!isLand) {
+                    var sst = (25 + Math.random() * 5).toFixed(1);
+                    gridFeatures.push({
+                        "type": "Feature",
+                        "properties": { "SST": parseFloat(sst) },
+                        "geometry": { "type": "Polygon", "coordinates": [[[lng, lat], [lng+0.4, lat], [lng+0.4, lat+0.4], [lng, lat+0.4], [lng, lat]]] }
+                    });
+                }
             }
         }
 
@@ -152,40 +206,45 @@
 
         L.geoJSON(gridFeatures, {
             style: function(feature) {
-                // Tăng fillOpacity lên 0.45 để lớp màu nổi lên trên ảnh vệ tinh
-                return { fillColor: getSSTColor(feature.properties.SST), weight: 0, fillOpacity: 0.45 };
+                return { fillColor: getSSTColor(feature.properties.SST), weight: 0.5, color: 'rgba(255,255,255,0.05)', fillOpacity: 0.4 };
             }
         }).addTo(map);
 
-        // 3. ĐIỂM DỰ BÁO CÁ
+        // ==========================================
+        // 3. ĐIỂM BÁO CÁ TẬP TRUNG (HOTSPOTS)
+        // ==========================================
         var spotData = [
-            { "name": "Prediction Accuracy: 85% / Skipjack Tuna", "coords": [12.3, 110.5], "color": "#ff4d6d" },
-            { "name": "Species: Skipjack Tuna", "coords": [11.1, 109.2], "color": "#00f5d4" },
-            { "name": "Prediction Accuracy: 80% / Skipjack Tuna", "coords": [13.45, 111.15], "color": "#ffb703" }
+            { "name": "Xác suất: 85% / Cá Ngừ Vằn", "coords": [12.3, 110.5], "color": "#ff4d6d" },
+            { "name": "Đàn cá nổi nhỏ - Đang di cư", "coords": [11.1, 109.5], "color": "#00f5d4" },
+            { "name": "Xác suất: 80% / Cá Ngừ Vằn", "coords": [13.45, 111.15], "color": "#ffb703" },
+            { "name": "Vùng mồi ăn dồi dào", "coords": [9.5, 109.8], "color": "#00b4d8" }
         ];
 
         spotData.forEach(function(spot) {
             var marker = L.circleMarker(spot.coords, {
-                radius: 8, fillColor: spot.color, color: "#fff", weight: 2, fillOpacity: 1
+                radius: 8, fillColor: spot.color, color: "#fff", weight: 2, fillOpacity: 0.9
             }).addTo(map);
-            marker.bindPopup("<b style='color:"+spot.color+"'><i class='fa-solid fa-fish'></i> " + spot.name + "</b>");
+            marker.bindPopup("<b style='color:"+spot.color+"'><i class='fa-solid fa-fish-fins'></i> " + spot.name + "</b>");
         });
 
-        // 4. VẼ BIỂU ĐỒ
+        // ==========================================
+        // 4. BIỂU ĐỒ BẢNG ĐIỀU KHIỂN
+        // ==========================================
         function createMiniChart(canvasId, label, data, color) {
             var ctx = document.getElementById(canvasId).getContext('2d');
             return new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: [1, 2, 3, 4, 5, 6, 7],
-                    datasets: [{ label: label, data: data, borderColor: color, backgroundColor: color + '20', fill: true, borderWidth: 2, pointRadius: 0 }]
+                    datasets: [{ label: label, data: data, borderColor: color, backgroundColor: color + '25', fill: true, borderWidth: 2, pointRadius: 0, tension: 0.4 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
             });
         }
-        createMiniChart('chart1', 'Graph Overlays', [20, 22, 21, 24, 25, 27, 26], '#ffb703');
-        createMiniChart('chart2', 'Environmental Trends', [50, 45, 60, 55, 65, 70, 62], '#00f5d4');
-        createMiniChart('chart3', 'Sea Current', [0.2, 0.4, 0.3, 0.5, 0.4, 0.6, 0.4], '#00b4d8');
+        
+        createMiniChart('chart1', 'Nhiệt Độ', [25, 26, 25.5, 27, 28.5, 29, 28], '#ffb703');
+        createMiniChart('chart2', 'Môi Trường', [30, 45, 40, 65, 75, 70, 85], '#00f5d4');
+        createMiniChart('chart3', 'Hải Lưu', [0.2, 0.5, 0.3, 0.6, 0.4, 0.7, 0.5], '#00b4d8');
     </script>
 </body>
 </html>
