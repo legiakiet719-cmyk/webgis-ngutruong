@@ -1,108 +1,151 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>WebGIS Dự Báo Ngư Trường & Biểu Đồ</title>
-    <!-- Thư viện Leaflet cho Bản đồ -->
+    <title>WebGIS Dự Báo Ngư Trường Chuyên Nghiệp</title>
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Thư viện Chart.js cho Biểu đồ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        body { margin: 0; padding: 0; display: flex; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden; }
-        /* Cột sidebar chứa biểu đồ bên trái */
-        #sidebar { width: 35%; padding: 20px; background-color: #f8f9fa; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; }
-        /* Phần bản đồ bên phải */
+        body { margin: 0; padding: 0; display: flex; font-family: Arial, sans-serif; height: 100vh; overflow: hidden; }
+        #sidebar { width: 35%; padding: 20px; background-color: #f4f6f9; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; }
         #map { width: 65%; height: 100%; }
-        
         h2 { color: #2c3e50; margin-top: 0; font-size: 22px; }
         p { color: #555; font-size: 14px; line-height: 1.5; }
         .chart-wrapper { flex-grow: 1; min-height: 300px; margin-top: 20px; }
+        
+        /* Chú giải trên bản đồ */
+        .legend { background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); line-height: 24px; color: #333; }
+        .legend i { width: 18px; height: 18px; float: left; margin-right: 8px; opacity: 0.7; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar chứa thông tin và Biểu đồ -->
     <div id="sidebar">
-        <h2>Bảng Điều Khiển Ngư Trường</h2>
-        <p>Hệ thống tự động phân tích vùng mặn, nhiệt độ bề mặt (SST) và nồng độ Chlorophyll-a để dự báo sản lượng cá tiềm năng.</p>
-        
+        <h2>WebGIS: Đánh Giá Biển Đông</h2>
+        <p>Hệ thống mô phỏng lớp dữ liệu nền Nhiệt độ bề mặt (SST) và độ pH. Sử dụng nút ở góc trên bên phải bản đồ để chuyển đổi các lớp dữ liệu.</p>
         <div class="chart-wrapper">
-            <!-- Khu vực vẽ biểu đồ -->
             <canvas id="forecastChart"></canvas>
         </div>
     </div>
 
-    <!-- Khu vực hiển thị Bản đồ -->
     <div id="map"></div>
 
     <script>
-        // 1. Dữ liệu đầu vào (Đã thêm tên vùng biển cho dễ nhìn trên biểu đồ)
+        // 1. KHỞI TẠO BẢN ĐỒ
+        var map = L.map('map').setView([11.5, 110.5], 6);
+        
+        // Lớp nền bản đồ vệ tinh (Base map)
+        var basemap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18, attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // ==========================================
+        // 2. MÔ PHỎNG LỚP NỀN NHIỆT ĐỘ VÀ PH (GRID)
+        // ==========================================
+        var gridFeatures = [];
+        // Tạo các ô vuông bao phủ vùng biển (từ vĩ độ 9-14, kinh độ 108-113)
+        for (var lat = 9; lat <= 14; lat += 0.5) {
+            for (var lng = 108; lng <= 113; lng += 0.5) {
+                // Tạo số liệu mô phỏng ngẫu nhiên có tính thực tế
+                var sst = (26 + Math.random() * 4).toFixed(1); // Nhiệt độ 26 - 30 độ C
+                var ph = (7.9 + Math.random() * 0.4).toFixed(2); // pH từ 7.9 - 8.3
+                
+                gridFeatures.push({
+                    "type": "Feature",
+                    "properties": { "SST": parseFloat(sst), "pH": parseFloat(ph) },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[lng, lat], [lng+0.5, lat], [lng+0.5, lat+0.5], [lng, lat+0.5], [lng, lat]]]
+                    }
+                });
+            }
+        }
+
+        // Hàm chọn màu cho lớp Nhiệt Độ (Đỏ là nóng, Xanh là lạnh)
+        function getColorSST(d) {
+            return d > 29 ? '#d73027' : d > 28 ? '#fc8d59' : d > 27 ? '#fee090' : '#91bfdb';
+        }
+        
+        // Hàm chọn màu cho lớp pH (Xanh đậm là tính kiềm cao hơn)
+        function getColorPH(d) {
+            return d > 8.2 ? '#08519c' : d > 8.1 ? '#3182bd' : d > 8.0 ? '#6baed6' : '#bdd7e7';
+        }
+
+        // Tạo layer Nhiệt độ
+        var layerNhietDo = L.geoJSON(gridFeatures, {
+            style: function(feature) {
+                return { fillColor: getColorSST(feature.properties.SST), weight: 1, color: 'white', fillOpacity: 0.5 };
+            },
+            onEachFeature: function(feature, layer) { layer.bindPopup("Nhiệt độ (SST): " + feature.properties.SST + " °C"); }
+        });
+
+        // Tạo layer pH
+        var layerPH = L.geoJSON(gridFeatures, {
+            style: function(feature) {
+                return { fillColor: getColorPH(feature.properties.pH), weight: 1, color: 'white', fillOpacity: 0.5 };
+            },
+            onEachFeature: function(feature, layer) { layer.bindPopup("Độ pH: " + feature.properties.pH); }
+        });
+
+        // ==========================================
+        // 3. LỚP ĐIỂM DỰ BÁO CÁ (NHƯ CŨ)
+        // ==========================================
         var duLieuTest = {
           "type": "FeatureCollection",
           "features": [
-            { "type": "Feature", "properties": { "Ten": "Vùng 1 (Khánh Hòa)", "SST": 28.5, "Chlorophyll": 0.45, "CPUE": 150, "Status": "Tốt" }, "geometry": { "type": "Point", "coordinates": [110.5, 12.3] } },
-            { "type": "Feature", "properties": { "Ten": "Vùng 2 (Nước trồi)", "SST": 25.2, "Chlorophyll": 1.80, "CPUE": 210, "Status": "Rất Tốt" }, "geometry": { "type": "Point", "coordinates": [109.2, 11.1] } },
-            { "type": "Feature", "properties": { "Ten": "Vùng 3 (Xa bờ)", "SST": 30.5, "Chlorophyll": 0.08, "CPUE": 15, "Status": "Kém" }, "geometry": { "type": "Point", "coordinates": [112.0, 10.0] } },
-            { "type": "Feature", "properties": { "Ten": "Vùng 4 (Phú Yên)", "SST": 27.8, "Chlorophyll": 0.35, "CPUE": 180, "Status": "Tốt" }, "geometry": { "type": "Point", "coordinates": [111.15, 13.45] } }
+            { "type": "Feature", "properties": { "Ten": "Vùng 1", "SST": 28.5, "CPUE": 150, "Status": "Tốt" }, "geometry": { "type": "Point", "coordinates": [110.5, 12.3] } },
+            { "type": "Feature", "properties": { "Ten": "Vùng 2", "SST": 25.2, "CPUE": 210, "Status": "Rất Tốt" }, "geometry": { "type": "Point", "coordinates": [109.2, 11.1] } },
+            { "type": "Feature", "properties": { "Ten": "Vùng 3", "SST": 30.5, "CPUE": 15, "Status": "Kém" }, "geometry": { "type": "Point", "coordinates": [112.0, 10.0] } },
+            { "type": "Feature", "properties": { "Ten": "Vùng 4", "SST": 27.8, "CPUE": 180, "Status": "Tốt" }, "geometry": { "type": "Point", "coordinates": [111.15, 13.45] } }
           ]
         };
 
-        // 2. THIẾT LẬP BẢN ĐỒ LEAFLET
-        var map = L.map('map').setView([11.5, 110.5], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(map);
-
-        function getColor(status) {
-            if (status.includes("Rất Tốt")) return "#d32f2f"; 
-            if (status.includes("Tốt")) return "#f57c00"; 
-            return "#757575"; 
+        function getPointColor(status) {
+            return status.includes("Rất Tốt") ? "#ff0000" : status.includes("Tốt") ? "#ff9900" : "#757575"; 
         }
 
-        L.geoJSON(duLieuTest, {
+        var layerDiemCa = L.geoJSON(duLieuTest, {
             pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, { radius: 12, fillColor: getColor(feature.properties.Status), color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9 });
+                return L.circleMarker(latlng, { radius: 10, fillColor: getPointColor(feature.properties.Status), color: "#fff", weight: 2, fillOpacity: 1 });
             },
             onEachFeature: function (feature, layer) {
-                var popupContent = "<b>" + feature.properties.Ten + "</b><br/>" +
-                                   "Nhiệt độ (SST): " + feature.properties.SST + " °C<br/>" +
-                                   "Diệp lục: " + feature.properties.Chlorophyll + " mg/m³<br/>" +
-                                   "Dự báo CPUE: " + feature.properties.CPUE + " kg/mẻ";
-                layer.bindPopup(popupContent);
+                layer.bindPopup("<b>" + feature.properties.Ten + "</b><br>Dự báo SP: " + feature.properties.CPUE + " kg");
             }
-        }).addTo(map);
+        });
 
-        // 3. XỬ LÝ DỮ LIỆU VÀ VẼ BIỂU ĐỒ BẰNG CHART.JS
-        // Lấy nhãn (tên vùng) và dữ liệu (Sản lượng dự báo) từ mảng GeoJSON
-        var nhanBieuDo = duLieuTest.features.map(f => f.properties.Ten);
-        var duLieuSanLuong = duLieuTest.features.map(f => f.properties.CPUE);
-        var mauSacBieuDo = duLieuTest.features.map(f => getColor(f.properties.Status));
+        // Bật mặc định lớp Nhiệt độ và Điểm cá lên bản đồ
+        layerNhietDo.addTo(map);
+        layerDiemCa.addTo(map);
 
+        // ==========================================
+        // 4. BỘ ĐIỀU KHIỂN BẬT/TẮT LAYER
+        // ==========================================
+        var baseMaps = {}; 
+        var overlayMaps = {
+            "Bản đồ nền Nhiệt độ (SST)": layerNhietDo,
+            "Bản đồ nền Độ pH": layerPH,
+            "Điểm dự báo có cá": layerDiemCa
+        };
+        // Thêm nút điều khiển vào góc trên bên phải
+        L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
+
+        // ==========================================
+        // 5. BIỂU ĐỒ CHART.JS (Giữ nguyên)
+        // ==========================================
         var ctx = document.getElementById('forecastChart').getContext('2d');
         var forecastChart = new Chart(ctx, {
-            type: 'bar', // Biểu đồ dạng cột
+            type: 'bar',
             data: {
-                labels: nhanBieuDo,
+                labels: duLieuTest.features.map(f => f.properties.Ten),
                 datasets: [{
-                    label: 'Sản lượng dự báo (CPUE - kg/mẻ)',
-                    data: duLieuSanLuong,
-                    backgroundColor: mauSacBieuDo, // Lấy màu tương ứng với trạng thái trên bản đồ
-                    borderWidth: 1
+                    label: 'Sản lượng (kg)',
+                    data: duLieuTest.features.map(f => f.properties.CPUE),
+                    backgroundColor: duLieuTest.features.map(f => getPointColor(f.properties.Status))
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Sản lượng (kg)' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Tương quan dự báo tại các điểm khảo sát', font: { size: 14 } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     </script>
 </body>
