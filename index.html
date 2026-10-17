@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Hệ Thống WebGIS Dự Báo Ngư Trường</title>
+    <title>Hệ Thống WebGIS Giám Sát Thủy Sản Sông Mekong</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,13 +12,13 @@
         :root {
             --bg-color: #0b131a;
             --panel-bg: rgba(16, 28, 38, 0.9);
-            --border-color: rgba(255, 255, 255, 0.1);
+            --border-color: rgba(255, 255, 255, 0.15);
             --text-color: #e2e8f0;
-            --accent-color: #00b4d8;
-            --active-color: #2ec4b6;
+            --accent-color: #2ec4b6;
+            --active-color: #ff9f1c; /* Màu cam nổi bật cho sông ngòi */
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; display: flex; flex-direction: column; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; display: flex; flex-direction: column; }
 
         header { height: 50px; background: #070d12; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 2000; }
         header h1 { margin: 0; font-size: 18px; font-weight: 500; display: flex; align-items: center; gap: 10px; color: #fff; }
@@ -36,7 +36,7 @@
         .control-panel::-webkit-scrollbar { width: 6px; }
         .control-panel::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 10px; }
         
-        .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+        .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #718096; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         
         .flex-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 6px; }
         
@@ -56,23 +56,23 @@
 
         #map { flex: 1; height: 100%; background-color: #000; }
 
-        .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 300px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; z-index: 1000; font-size: 12px; backdrop-filter: blur(5px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .map-overlay-right { position: absolute; top: 15px; right: 15px; width: 310px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; z-index: 1000; font-size: 12px; backdrop-filter: blur(5px); box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         .catch-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
         .catch-table th, .catch-table td { text-align: left; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .catch-table th { color: #718096; font-weight: normal; font-size: 11px; text-transform: uppercase; }
         .catch-table tr { cursor: pointer; transition: background 0.2s; }
-        .catch-table tr:hover { background: rgba(0, 180, 216, 0.2); } 
-        .catch-table tr.active-row { border-left: 3px solid var(--accent-color); background: rgba(0, 180, 216, 0.15); }
+        .catch-table tr:hover { background: rgba(255, 159, 28, 0.2); } 
+        .catch-table tr.active-row { border-left: 3px solid var(--active-color); background: rgba(255, 159, 28, 0.15); }
 
         .map-legend { position: absolute; bottom: 20px; left: 410px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 15px; z-index: 1000; font-size: 11px; display: flex; flex-direction: column; gap: 8px; width: 240px; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .legend-bar { height: 8px; background: linear-gradient(to right, #00b4d8, #00f5d4, #ffb703, #ff4d6d); border-radius: 4px; }
+        .legend-bar { height: 8px; background: linear-gradient(to right, #43aa8b, #f9c74f, #f3722c, #f94144); border-radius: 4px; }
         .legend-labels { display: flex; justify-content: space-between; color: #a0aec0; text-transform: uppercase; font-weight: bold; font-size: 10px; }
         
-        /* CSS Tùy chỉnh cho Bảng thông tin (Popup) chuyên nghiệp */
-        .leaflet-popup-content-wrapper { background: var(--panel-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); box-shadow: 0 0 20px rgba(0,245,212,0.3); border-radius: 6px; padding: 0; }
+        /* Popup UI */
+        .leaflet-popup-content-wrapper { background: var(--panel-bg) !important; color: var(--text-color) !important; border: 1px solid var(--border-color); box-shadow: 0 0 20px rgba(255, 159, 28, 0.3); border-radius: 6px; padding: 0; }
         .leaflet-popup-tip { background: var(--panel-bg) !important; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
-        .custom-popup { width: 220px; font-family: 'Segoe UI', sans-serif; }
-        .custom-popup-header { background: rgba(0, 180, 216, 0.15); padding: 10px; border-bottom: 1px solid var(--border-color); border-top-left-radius: 6px; border-top-right-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; }
+        .custom-popup { width: 230px; font-family: 'Segoe UI', sans-serif; }
+        .custom-popup-header { background: rgba(255, 159, 28, 0.15); padding: 10px; border-bottom: 1px solid var(--border-color); border-top-left-radius: 6px; border-top-right-radius: 6px; display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; }
         .custom-popup-body { padding: 12px; font-size: 12px; line-height: 1.8; }
         .custom-popup-body .data-row { display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px; margin-bottom: 4px; }
         .custom-popup-body .data-label { color: #a0aec0; }
@@ -81,11 +81,11 @@
 </head>
 <body>
     <header>
-        <h1><i class="fa-solid fa-globe" style="color: var(--accent-color);"></i> WebGIS Dự Báo Ngư Trường</h1>
+        <h1><i class="fa-solid fa-water" style="color: var(--active-color);"></i> WebGIS Giám Sát Thủy Sản Lưu Vực Sông</h1>
         <div class="nav-right">
             <span id="live-time" style="color: var(--active-color); font-weight: bold; margin-right: 15px; font-size: 14px;"></span>
-            <span><i class="fa-solid fa-layer-group"></i> Bản đồ 2D</span>
-            <span><i class="fa-solid fa-water"></i> Địa hình biển</span>
+            <span><i class="fa-solid fa-layer-group"></i> Lớp Bản Đồ</span>
+            <span><i class="fa-solid fa-water"></i> Thủy Hệ</span>
             <span><i class="fa-solid fa-user-tie"></i> Lê Gia Kiệt</span>
         </div>
     </header>
@@ -94,8 +94,8 @@
         <div class="sidebar-icons">
             <i class="fa-solid fa-house active"></i>
             <i class="fa-solid fa-chart-line"></i>
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <i class="fa-solid fa-layer-group"></i>
+            <i class="fa-solid fa-droplet"></i>
+            <i class="fa-solid fa-satellite"></i>
             <i class="fa-solid fa-gear" style="margin-top: auto; margin-bottom: 20px;"></i>
         </div>
 
@@ -106,222 +106,34 @@
                     <span id="model-status" style="color: var(--active-color); font-size: 11px;"><i class="fa-solid fa-satellite-dish"></i> Live Tracking</span>
                 </div>
                 <div class="flex-row">
-                    <span>Quét điểm nóng (AI Layer)</span>
+                    <span>Quét mặt nước (AI River Scan)</span>
                     <label class="switch"><input type="checkbox" id="toggleAI" checked><span class="slider"></span></label>
                 </div>
             </div>
             
             <div>
-                <div class="section-title">Thông Số Biển (Live)</div>
+                <div class="section-title">Chất Lượng Nước (Live)</div>
                 <div class="variable-list">
-                    <div class="var-item"><span>Nhiệt độ (SST):</span><span class="var-val">28.5°C</span></div>
-                    <div class="var-item"><span>Diệp lục (Chl-a):</span><span class="var-val" style="color: #00f5d4;">Cao</span></div>
-                    <div class="var-item"><span>Độ pH đại dương:</span><span class="var-val">8.1</span></div>
+                    <div class="var-item"><span>Nhiệt độ nước:</span><span class="var-val" style="color: #f9c74f;">29.2°C</span></div>
+                    <div class="var-item"><span>Oxy hòa tan (DO):</span><span class="var-val" style="color: #43aa8b;">5.8 mg/L</span></div>
+                    <div class="var-item"><span>Độ đục (Phù sa):</span><span class="var-val" style="color: #f3722c;">Trung bình</span></div>
                 </div>
             </div>
             
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Biến Động Nhiệt Độ (°C)</div><div class="chart-container"><canvas id="chart1"></canvas></div></div>
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Xu Hướng Môi Trường</div><div class="chart-container"><canvas id="chart2"></canvas></div></div>
-            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Dòng Hải Lưu (m/s)</div><div class="chart-container"><canvas id="chart3"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Biến Động Oxy Hòa Tan (mg/L)</div><div class="chart-container"><canvas id="chart1"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Chỉ Số Ô Nhiễm Hữu Cơ</div><div class="chart-container"><canvas id="chart2"></canvas></div></div>
+            <div class="chart-box"><div class="section-title" style="border:0; margin:0;">Lưu Tốc Dòng Chảy (m/s)</div><div class="chart-container"><canvas id="chart3"></canvas></div></div>
         </div>
 
         <div id="map"></div>
 
         <div class="map-overlay-right">
-            <div class="section-title">Theo Dõi Tọa Độ Đàn Cá (Live)</div>
+            <div class="section-title">Theo Dõi Đàn Cá / Lồng Bè (Live)</div>
             <table class="catch-table">
-                <thead><tr><th>Mã Đàn</th><th>Tọa Độ GPS</th></tr></thead>
+                <thead><tr><th>Mã Trạm</th><th>Tọa Độ Nhận Diện</th></tr></thead>
                 <tbody id="table-body"></tbody>
             </table>
         </div>
 
         <div class="map-legend">
-            <span style="font-weight: bold; color: #fff; font-size: 12px;"><i class="fa-solid fa-temperature-half"></i> Mật Độ Phân Bố</span>
-            <div class="legend-bar"></div>
-            <div class="legend-labels"><span>Thấp</span><span>Cao</span></div>
-        </div>
-    </div>
-
-    <script>
-        // --- 1. ĐỒNG HỒ LIVE THỜI GIAN THỰC ---
-        function updateTime() {
-            var now = new Date();
-            document.getElementById('live-time').innerHTML = '<i class="fa-solid fa-tower-broadcast"></i> Tín hiệu cập nhật: ' + now.toLocaleTimeString('vi-VN');
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
-
-        // --- 2. KHỞI TẠO BẢN ĐỒ VỆ TINH ---
-        var map = L.map('map', {zoomControl: false}).setView([11.5, 110.5], 6);
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 18 }).addTo(map);
-
-        var aiLayerGroup = L.layerGroup().addTo(map); 
-
-        // --- 3. DỮ LIỆU LƯỚI NHIỆT ĐỘ (CÓ LAND MASK) ---
-        var gridFeatures = [];
-        for (var lat = 8; lat <= 16; lat += 0.4) { 
-            for (var lng = 105; lng <= 114; lng += 0.4) { 
-                var isLand = false;
-                if (lat >= 14.5 && lng <= 109.0) isLand = true; 
-                else if (lat >= 13.0 && lat < 14.5 && lng <= 109.3) isLand = true; 
-                else if (lat >= 11.5 && lat < 13.0 && lng <= 109.2) isLand = true; 
-                else if (lat >= 10.0 && lat < 11.5 && lng <= 108.5) isLand = true; 
-                else if (lat < 10.0 && lng <= 106.8) isLand = true; 
-                
-                if (!isLand) {
-                    gridFeatures.push({
-                        "type": "Feature",
-                        "properties": { "SST": parseFloat((25 + Math.random() * 5).toFixed(1)) },
-                        "geometry": { "type": "Polygon", "coordinates": [[[lng, lat], [lng+0.4, lat], [lng+0.4, lat+0.4], [lng, lat+0.4], [lng, lat]]] }
-                    });
-                }
-            }
-        }
-        function getSSTColor(d) { return d > 29 ? '#ff4d6d' : d > 28 ? '#ffb703' : d > 27 ? '#00f5d4' : '#00b4d8'; }
-        
-        L.geoJSON(gridFeatures, {
-            style: function(f) { return { fillColor: getSSTColor(f.properties.SST), weight: 0.5, color: 'rgba(255,255,255,0.05)', fillOpacity: 0.35 }; }
-        }).addTo(aiLayerGroup);
-
-        // --- 4. CẤU HÌNH ĐÀN CÁ CHUYỂN ĐỘNG ---
-        var fishSchools = [
-            { id: "TS.55.366", name: "Cá Ngừ Vằn", lat: 12.3, lng: 110.5, color: "#ff4d6d", acc: 85, speedLat: 0.003, speedLng: 0.005, dirLat: 1, dirLng: 1, depth: 45 },
-            { id: "TS.55.365", name: "Cá Nổi Nhỏ", lat: 11.1, lng: 109.8, color: "#00f5d4", acc: 92, speedLat: -0.004, speedLng: 0.002, dirLat: 1, dirLng: 1, depth: 15 },
-            { id: "TS.55.369", name: "Cá Ngừ Mắt To", lat: 13.45, lng: 111.15, color: "#ffb703", acc: 80, speedLat: 0.002, speedLng: -0.006, dirLat: 1, dirLng: 1, depth: 80 },
-            { id: "TS.55.390", name: "Đàn Cá Thu", lat: 14.1, lng: 111.8, color: "#00b4d8", acc: 75, speedLat: -0.005, speedLng: -0.003, dirLat: 1, dirLng: 1, depth: 30 }
-        ];
-
-        var tableBody = document.getElementById('table-body');
-
-        // Hàm tạo nội dung Bảng Thông Tin (Popup) xịn xò
-        function createPopupHTML(fish) {
-            var currentSpeed = (Math.abs(fish.speedLat) + Math.abs(fish.speedLng)) * 1000 + Math.random(); // Mô phỏng số liệu tốc độ
-            return `
-                <div class="custom-popup">
-                    <div class="custom-popup-header" style="color: ${fish.color};">
-                        <i class="fa-solid fa-fish-fins"></i> <span>Mục tiêu: ${fish.id}</span>
-                    </div>
-                    <div class="custom-popup-body">
-                        <div class="data-row"><span class="data-label">Loài dự kiến:</span><span class="data-value" style="color:#fff;">${fish.name}</span></div>
-                        <div class="data-row"><span class="data-label">Xác suất AI:</span><span class="data-value" style="color:#00f5d4;">${fish.acc}%</span></div>
-                        <div class="data-row"><span class="data-label">Độ sâu ước tính:</span><span class="data-value" style="color:#ffb703;">${fish.depth} m</span></div>
-                        <div class="data-row"><span class="data-label">Vận tốc bơi:</span><span class="data-value">${currentSpeed.toFixed(1)} hải lý/h</span></div>
-                        <div class="data-row" style="border:none;"><span class="data-label">Tọa độ GPS:</span><span class="data-value" style="color:var(--accent-color);">${fish.lng.toFixed(3)}°E<br>${fish.lat.toFixed(3)}°N</span></div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Khởi tạo các điểm cá và hàng trong bảng
-        fishSchools.forEach(function(fish, index) {
-            // Vẽ marker
-            fish.marker = L.circleMarker([fish.lat, fish.lng], { radius: 8, fillColor: fish.color, color: "#fff", weight: 2, fillOpacity: 0.9 }).addTo(aiLayerGroup);
-            fish.marker.bindPopup(createPopupHTML(fish));
-
-            // Đổ HTML vào bảng
-            var tr = document.createElement('tr');
-            tr.id = "row-" + fish.id; // Gắn ID để dễ cập nhật
-            if(index === 0) tr.className = "active-row";
-            tr.innerHTML = `<td>${fish.id}</td><td id="coord-${fish.id}" style="color:${fish.color}; font-family:monospace; font-size:12px;">${fish.lng.toFixed(3)}°E, ${fish.lat.toFixed(3)}°N</td>`;
-            
-            // Chức năng click bay đến tọa độ
-            tr.onclick = function() {
-                document.querySelectorAll('.catch-table tr').forEach(row => row.classList.remove('active-row'));
-                tr.classList.add('active-row');
-                if(document.getElementById('toggleAI').checked) {
-                    map.flyTo([fish.lat, fish.lng], 9, { duration: 1.2 });
-                    setTimeout(() => { fish.marker.openPopup(); }, 1300);
-                }
-            };
-            tableBody.appendChild(tr);
-        });
-
-        // --- 5. LOGIC DI CHUYỂN CỦA ĐÀN CÁ ---
-        setInterval(function() {
-            if (!document.getElementById('toggleAI').checked) return; // Nếu AI tắt thì cá ngừng bơi
-
-            fishSchools.forEach(function(fish) {
-                // Thêm độ nhiễu loạn ngẫu nhiên để cá bơi tự nhiên hơn
-                var jitterLat = (Math.random() - 0.5) * 0.002;
-                var jitterLng = (Math.random() - 0.5) * 0.002;
-
-                // Tính toán vị trí mới
-                fish.lat += (fish.speedLat * fish.dirLat) + jitterLat;
-                fish.lng += (fish.speedLng * fish.dirLng) + jitterLng;
-
-                // Cơ chế chống mắc cạn (Giới hạn trong khung đại dương nhất định)
-                if (fish.lat > 15 || fish.lat < 9) fish.dirLat *= -1; // Chạm biên trên/dưới
-                if (fish.lng > 114 || fish.lng < 109.5) fish.dirLng *= -1; // Chạm biên trái(bờ)/phải
-
-                // Cập nhật vị trí marker trên bản đồ
-                fish.marker.setLatLng([fish.lat, fish.lng]);
-
-                // Nếu người dùng đang mở Popup của điểm này, cập nhật nội dung Popup liên tục
-                if (fish.marker.isPopupOpen()) {
-                    fish.marker.setPopupContent(createPopupHTML(fish));
-                }
-
-                // Cập nhật tọa độ nhảy số liên tục trên Bảng bên phải
-                document.getElementById("coord-" + fish.id).innerHTML = `${fish.lng.toFixed(3)}°E, ${fish.lat.toFixed(3)}°N`;
-            });
-        }, 1000); // Mỗi 1 giây đàn cá sẽ cập nhật vị trí 1 lần
-
-        // --- 6. NÚT SWITCH (BẬT/TẮT TOÀN BỘ AI) ---
-        document.getElementById('toggleAI').addEventListener('change', function() {
-            var statusText = document.getElementById('model-status');
-            if (this.checked) {
-                map.addLayer(aiLayerGroup);
-                statusText.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> Live Tracking';
-                statusText.style.color = "var(--active-color)";
-            } else {
-                map.removeLayer(aiLayerGroup);
-                statusText.innerHTML = '<i class="fa-solid fa-circle-pause"></i> Đã tạm dừng';
-                statusText.style.color = "#718096";
-                map.closePopup();
-            }
-        });
-
-        // --- 7. BIỂU ĐỒ ĐỘNG CHẠY THEO THỜI GIAN THỰC (LIVE STREAM) ---
-        function createDynamicChart(canvasId, label, initialData, color, yMin, yMax) {
-            var ctx = document.getElementById(canvasId).getContext('2d');
-            return new Chart(ctx, {
-                type: 'line', 
-                data: { 
-                    labels: ['1','2','3','4','5','6','7','8','9','10'],
-                    datasets: [{ 
-                        label: label, data: initialData, borderColor: color, backgroundColor: color + '25', 
-                        fill: true, borderWidth: 2, pointRadius: 0, tension: 0.4 
-                    }] 
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false, 
-                    animation: { duration: 0 }, 
-                    plugins: { legend: { display: false } }, 
-                    scales: { x: { display: false }, y: { display: false, min: yMin, max: yMax } } 
-                }
-            });
-        }
-        
-        var chartTemp = createDynamicChart('chart1', 'Nhiệt Độ', [27,27.2,26.8,27.5,27.1,26.9,27,27.4,27.2,27], '#ffb703', 25, 30);
-        var chartEnv  = createDynamicChart('chart2', 'Môi Trường', [50,55,60,48,52,65,70,68,55,60], '#00f5d4', 20, 100);
-        var chartCur  = createDynamicChart('chart3', 'Hải Lưu', [0.3,0.4,0.35,0.5,0.45,0.38,0.42,0.55,0.4,0.3], '#00b4d8', 0, 1);
-
-        setInterval(function() {
-            if (document.getElementById('toggleAI').checked) {
-                chartTemp.data.datasets[0].data.shift(); 
-                chartTemp.data.datasets[0].data.push(26 + Math.random() * 3); 
-                chartTemp.update();
-
-                chartEnv.data.datasets[0].data.shift();
-                chartEnv.data.datasets[0].data.push(40 + Math.random() * 45); 
-                chartEnv.update();
-                
-                chartCur.data.datasets[0].data.shift();
-                chartCur.data.datasets[0].data.push(0.2 + Math.random() * 0.5); 
-                chartCur.update();
-            }
-        }, 1500); 
-    </script>
-</body>
-</html>
+            <span style="font-weight: bold; color: #fff; font-size: 12px;"><i class="fa-solid fa-temperature-half"></i> Bản Đồ Nhiệt Cảnh Báo (TSS
